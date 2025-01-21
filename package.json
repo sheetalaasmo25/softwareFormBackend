@@ -14,7 +14,9 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "html-pdf": "^3.0.1",
     "mongoose": "^8.9.3",
+    "pdf-lib": "^1.17.1",
     "puppeteer": "^23.11.1"
   }
 }
