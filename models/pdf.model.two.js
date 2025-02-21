@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 
-const PdfSchema = new mongoose.Schema({
+const PdfTwoSchema = new mongoose.Schema({
     pdfName: { type: String, required: true },
     date: { type: String, required: false },
-  
     pdfBuffer: {
         type: Buffer,  // This is a single buffer
         required: true,
@@ -11,6 +10,6 @@ const PdfSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
 });
 
-const PDF = mongoose.model('PDF', PdfSchema);
+const PDFTWO = mongoose.model('PDFTWO', PdfTwoSchema);
 
-module.exports = PDF;
+module.exports = PDFTWO;
