@@ -4,11 +4,14 @@ const PDF = require('../models/pdf.model'); // Import the PDF model
 // Function to generate and save a static PDF
 const generateStaticPdf = async (req, res) => {
   try {
+    console.log("🔹 Received request to generate PDF");
+
     const { pdfName } = req.body;
     if (!pdfName) {
-      return res.status(400).json({ message: 'PDF name is required' });
+      return res.status(400).json({ message: "PDF name is required" });
     }
 
+    console.log("✅ PDF Name:", pdfName);
     const htmlContent = `<!DOCTYPE html>
   <!-- Created by pdf2htmlEX (https://github.com/pdf2htmlEX/pdf2htmlEX) -->
   <html xmlns="http://www.w3.org/1999/xhtml">
@@ -1385,31 +1388,43 @@ const generateStaticPdf = async (req, res) => {
   </div>
   </body>
   </html>`;
-  const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.setContent(htmlContent);
+  console.log("🔹 Launching Puppeteer...");
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"], // Required for AWS EC2
+  });
 
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "10mm", bottom: "10mm", left: "10mm", right: "10mm" },
-    });
+  console.log("✅ Puppeteer launched successfully");
 
-    await browser.close();
+  const page = await browser.newPage();
+  await page.setContent(htmlContent, { waitUntil: "load" });
 
-    // Save PDF with pdfName in the database
-    const newPdf = new PDF({ pdfName, pdfBuffer: Buffer.from(pdfBuffer) });
-    await newPdf.save();
+  console.log("🔹 Generating PDF...");
+  const pdfBuffer = await page.pdf({
+    format: "A4",
+    printBackground: true,
+    margin: { top: "10mm", bottom: "10mm", left: "10mm", right: "10mm" },
+  });
 
-    res.status(200).json({
-      message: "PDF generated and saved successfully",
-      pdfId: newPdf._id,
-      pdfName: newPdf.pdfName, // Return the pdfName in the response
-    });
-  } catch (error) {
-    console.error("Error generating static PDF:", error);
-    res.status(500).send("Error generating PDF");
-  }
+  await browser.close();
+  console.log("✅ PDF generated successfully");
+
+  // Save PDF in MongoDB
+  console.log("🔹 Saving PDF to MongoDB...");
+  const newPdf = new PDF({ pdfName, pdfBuffer: Buffer.from(pdfBuffer) });
+  await newPdf.save();
+  console.log("✅ PDF saved successfully with ID:", newPdf._id);
+
+  // Send response
+  res.status(200).json({
+    message: "PDF generated and saved successfully",
+    pdfId: newPdf._id,
+    pdfName: newPdf.pdfName,
+  });
+} catch (error) {
+  console.error("❌ Error generating PDF:", error);
+  res.status(500).json({ message: "Error generating PDF", error: error.message });
+}
 };
 
 // Get PDF by ID
