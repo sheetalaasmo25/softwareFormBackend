@@ -323,7 +323,7 @@ pdf2htmlEX.defaultViewer = new pdf2htmlEX.Viewer({});
 </body>
 </html>
 `;
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true,args: ["--no-sandbox", "--disable-setuid-sandbox"] });
   const page = await browser.newPage();
   await page.setContent(htmlContent);
 
@@ -714,7 +714,7 @@ const updatePdfDate = async (req, res) => {
       `;
       
   // Generate the updated PDF with Puppeteer
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true,args: ["--no-sandbox", "--disable-setuid-sandbox"] });
   const page = await browser.newPage();
   await page.setContent(updatedHtmlContent);
 
